@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>跨境電商健檢總覽儀表板</title>
 <meta name="description" content="彙整跨境電商工具矩陣的商品組合健檢數據、逐商品工作流程進度與各工具序號授權狀態的單一總覽入口。">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#173a8c">
 <style>
+  #marqueeBar{position:fixed;top:0;left:0;right:0;height:28px;background:#111827;overflow:hidden;z-index:2100;display:none;align-items:center;}
+  #marqueeBar.show{display:flex;}
+  #marqueeTrack{display:inline-block;white-space:nowrap;padding-left:100%;font-size:.78rem;font-weight:600;color:#fbbf24;animation:marquee-scroll 30s linear infinite;}
+  body.has-marquee{padding-top:28px;}
+  @keyframes marquee-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
   :root{
     --bg:#f2f5f9; --card:#ffffff; --text:#1b2534; --muted:#5b6a7d; --border:#dde4ec;
     --brand:#2452b8; --brand-dark:#173a8c; --brand-light:#e8eefc;
@@ -101,8 +109,12 @@
   .tool-card .tlic.off{color:var(--muted);}
   .tool-card a.tlink{font-size:.8rem;margin-top:auto;}
 
-  footer{text-align:center;color:var(--muted);font-size:.78rem;margin-top:30px;padding-top:16px;border-top:1px solid var(--border);}
+  footer{color:var(--muted);font-size:.78rem;margin-top:30px;padding-top:16px;border-top:1px solid var(--border);}
   footer a{color:var(--muted);text-decoration:underline;}
+  footer .disclaimer{line-height:1.7;margin-bottom:16px;}
+  footer .disclaimer code{background:#eef1f5;padding:1px 6px;border-radius:4px;}
+  .footer-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;}
+  .footer-links{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#1b2534;color:#fff;padding:10px 20px;border-radius:999px;font-size:.85rem;opacity:0;pointer-events:none;transition:all .25s;z-index:999;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -116,6 +128,7 @@
 </style>
 </head>
 <body>
+<div id="marqueeBar"><div id="marqueeTrack"></div></div>
 <div class="wrap">
 
   <header class="hero">
@@ -123,7 +136,8 @@
     <p>把「商品組合收支平衡計算機」的商品健檢數據，跟標題／Listing／成本／PPC／關鍵字雲／客評回覆等工具的使用進度整合成一頁總覽，並列出各工具序號授權狀態與快速入口。純瀏覽器端讀取，資料不會離開這台裝置。</p>
     <div class="hero-actions">
       <button class="btn btn-light" id="refreshBtn">🔄 重新整理資料</button>
-      <a class="btn btn-outline" href="manual.html">📖 使用說明</a>
+      <a class="btn btn-outline" href="manual.html">📖 操作手冊</a>
+      <button class="btn btn-outline" id="installBtn" type="button">📲 加入主畫面</button>
       <a class="btn btn-outline" href="https://m255525.github.io/amazon-listing-mix-calculator/" target="_blank" rel="noopener">🔗 開啟商品組合收支平衡計算機</a>
     </div>
   </header>
@@ -157,6 +171,7 @@
         <tbody id="checklistTbody"></tbody>
       </table>
     </div>
+    <div style="margin-top:10px;"><button class="btn-sm" id="downloadChecklistBtn">📥 下載檢查清單（.csv）</button></div>
   </section>
 
   <section id="licenseSection">
@@ -171,8 +186,15 @@
   </section>
 
   <footer>
-    本工具為個人整合用控制台，純前端讀取瀏覽器 localStorage，不上傳任何資料。若在不同網域（非 m255525.github.io 同源）開啟，將無法自動讀取其他工具的資料，請改用「貼上資料」功能。<br>
-    創作者：Mark Tsai
+    <div class="disclaimer">
+      <strong>使用警語：</strong>本工具是個人整合用控制台，純前端讀取瀏覽器 <code>localStorage</code>，不會把任何資料上傳到伺服器。「商品組合健檢」的數字直接沿用「商品組合收支平衡計算機」現場重算，該工具既有的警語同樣適用於這裡呈現的數字——所有金額皆為估計值、非正式財務報表；「自訂上架金額上限」為使用者自訂參考門檻，非 Amazon 官方規則；「商品組合陳列角色」為簡化規則式分類，僅供參考；匯率為手動輸入固定值，不會即時查詢。「工具序號授權總覽」只讀取本機儲存的序號字串，代表「這台瀏覽器是否輸入過序號」，<strong>不是</strong>即時向各工具後端重新驗證是否仍在有效期限內。「逐商品工作流程檢查清單」的勾選狀態只存在這台瀏覽器，跟其他工具彼此不互通。若在不同網域（非 m255525.github.io 同源）開啟，將無法自動讀取其他工具的資料，請改用「手動貼上資料」備援。完整使用說明與創作者資料請見<a href="manual.html">操作手冊</a>。
+    </div>
+    <div class="footer-row">
+      <span>製作：Mark Tsai｜<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a></span>
+      <span class="footer-links">
+        <img src="https://visitor-badge.laobi.icu/badge?page_id=m255525.ecommercehealthdashboard" alt="訪客次數" style="vertical-align:middle;height:20px;">
+      </span>
+    </div>
   </footer>
 </div>
 
@@ -422,11 +444,13 @@
     });
     html += '</div>';
 
-    html += '<div style="margin-top:6px;"><button class="btn-sm" id="copySummaryBtn">📋 複製健檢摘要文字</button>' +
+    html += '<div style="margin-top:6px;"><button class="btn-sm" id="copySummaryBtn">📋 複製健檢摘要文字</button> ' +
+            '<button class="btn-sm" id="downloadSummaryBtn">📥 下載健檢摘要（.txt）</button>' +
             (srcMode === "cached" ? ' <button class="btn-sm" id="reimportBtn">重新貼上更新資料</button>' : '') + '</div>';
 
     sec.innerHTML = html;
     $("copySummaryBtn").addEventListener("click", copySummary);
+    $("downloadSummaryBtn").addEventListener("click", downloadSummary);
     if(srcMode === "cached" && $("reimportBtn")){
       $("reimportBtn").addEventListener("click", function(){
         sec.insertAdjacentHTML("beforeend", buildImportBox());
@@ -443,24 +467,48 @@
     '</div>';
   }
 
-  function copySummary(){
+  function buildSummaryText(){
     var totals = calc.totals;
     var urgent = calc.perProduct.filter(function(r){ return r.restockLevel === "urgent"; });
     var watch = calc.perProduct.filter(function(r){ return r.restockLevel === "watch"; });
+    var roleCounts = {};
+    calc.perProduct.forEach(function(r){ roleCounts[r.role] = (roleCounts[r.role]||0)+1; });
     var lines = [];
-    lines.push("【跨境電商健檢摘要】" + new Date().toLocaleDateString("zh-TW"));
+    lines.push("【跨境電商健檢摘要】" + new Date().toLocaleString("zh-TW"));
     lines.push("商品數：" + calc.perProduct.length + "　分類數：" + srcState.categories.length);
+    lines.push("總週毛利（已扣抽成）：" + fmtMoney(totals.weeklyGross) + "　總月毛利（已扣抽成）：" + fmtMoney(totals.monthlyGross));
     lines.push("總週淨利：" + fmtMoney(totals.weeklyNet) + "（門檻 " + fmtMoney(srcState.weeklyThreshold) + "）");
     lines.push("總月淨利：" + fmtMoney(totals.monthlyNet) + "（門檻 " + fmtMoney(srcState.monthlyThreshold) + "）");
-    lines.push("上架總金額：" + fmtMoney(totals.listingTotal) + (srcState.capEnabled ? "（上限 " + fmtMoney(srcState.capAmount) + "）" : ""));
-    if(urgent.length) lines.push("緊急補貨：" + urgent.map(function(r){ return r.name; }).join("、"));
-    if(watch.length) lines.push("注意補貨：" + watch.map(function(r){ return r.name; }).join("、"));
-    var text = lines.join("\n");
+    lines.push("上架總金額（庫存估值）：" + fmtMoney(totals.listingTotal) + (srcState.capEnabled ? "（上限 " + fmtMoney(srcState.capAmount) + "）" : "（未啟用上限）"));
+    lines.push("補貨警示：緊急 " + urgent.length + " 項、注意 " + watch.length + " 項");
+    if(urgent.length) lines.push("　緊急補貨：" + urgent.map(function(r){ return r.name + "（可撐" + r.daysLeft.toFixed(1) + "天）"; }).join("、"));
+    if(watch.length) lines.push("　注意補貨：" + watch.map(function(r){ return r.name + "（可撐" + r.daysLeft.toFixed(1) + "天）"; }).join("、"));
+    lines.push("商品組合陳列角色：" + ["main","associated","support","auxiliary","stimulus"].map(function(k){ return ROLE_DEFS[k].label + " " + (roleCounts[k]||0) + " 項"; }).join("　"));
+    return lines.join("\n");
+  }
+
+  function downloadTextFile(filename, text){
+    var blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function copySummary(){
+    var text = buildSummaryText();
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(text).then(function(){ showToast("已複製健檢摘要"); }).catch(function(){ showToast("複製失敗，請手動選取"); });
     } else {
       showToast("此瀏覽器不支援自動複製");
     }
+  }
+
+  function downloadSummary(){
+    var stamp = new Date().toISOString().slice(0,10);
+    downloadTextFile("健檢摘要_" + stamp + ".txt", buildSummaryText());
+    showToast("已下載健檢摘要");
   }
 
   /* ---------- 貼上資料面板 ---------- */
@@ -505,6 +553,26 @@
     $("searchInput").oninput = renderChecklistTable;
     $("categoryFilter").onchange = renderChecklistTable;
     $("progressFilter").onchange = renderChecklistTable;
+    $("downloadChecklistBtn").onclick = downloadChecklistCsv;
+  }
+
+  function downloadChecklistCsv(){
+    var header = ["商品","分類","角色","健康狀態"].concat(CHECKLIST_TOOLS.map(function(t){ return t.short; })).concat(["進度"]);
+    var rows = [header];
+    calc.perProduct.forEach(function(r){
+      var role = ROLE_DEFS[r.role];
+      var healthLabel = r.restockLevel === "urgent" ? "急需補貨" : r.restockLevel === "watch" ? "需留意庫存" : (r.monthlyNet >= 0 ? "正常" : "月淨利為負");
+      var row = checklist[r.id] || {};
+      var checks = CHECKLIST_TOOLS.map(function(t){ return row[t.key] ? "V" : ""; });
+      var prog = getProgress(r.id);
+      rows.push([r.name, r.categoryName, role.label, healthLabel].concat(checks).concat([prog.done + "/" + prog.total]));
+    });
+    var csv = "﻿" + rows.map(function(row){
+      return row.map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(",");
+    }).join("\r\n");
+    var stamp = new Date().toISOString().slice(0,10);
+    downloadTextFile("工作流程檢查清單_" + stamp + ".csv", csv);
+    showToast("已下載檢查清單");
   }
 
   function getProgress(pid){
@@ -605,6 +673,129 @@
   $("refreshBtn").addEventListener("click", function(){ boot(); showToast("已重新讀取"); });
 
   boot();
+})();
+</script>
+
+<script>
+/* ================= 頂部跑馬燈（獨立運作，跟上方主程式邏輯無關；共用工作區既有的公告 Google Sheet） ================= */
+(function () {
+  "use strict";
+  var MARQUEE_CHECK_URL = "https://script.google.com/macros/s/AKfycbwKX0DNNbY8y4nf90BFTHtxgfqJcHHcZasRrgycl4QAe52_hkjMWSkYk4xOsqU-JPCROw/exec";
+  var STORAGE_KEY = "ecomHealthDashboardMarquee";
+  var REFRESH_MS = 20 * 60 * 1000;
+
+  var bar = document.getElementById("marqueeBar");
+  var track = document.getElementById("marqueeTrack");
+  var lastKey = null;
+
+  function loadCache() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function saveCache(items) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (e) {}
+  }
+  function appendParsedText(container, text) {
+    var re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    var lastIndex = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > lastIndex) container.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+      var a = document.createElement("a");
+      a.href = m[2];
+      a.textContent = m[1];
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.style.color = "inherit";
+      a.style.textDecoration = "underline";
+      container.appendChild(a);
+      lastIndex = re.lastIndex;
+    }
+    if (lastIndex < text.length) container.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+  function buildTrackContent(items) {
+    var frag = document.createDocumentFragment();
+    function appendPass() {
+      items.forEach(function (item, idx) {
+        if (idx > 0) frag.appendChild(document.createTextNode("　★　"));
+        appendParsedText(frag, item);
+      });
+    }
+    appendPass();
+    frag.appendChild(document.createTextNode("　★　"));
+    appendPass();
+    return frag;
+  }
+  function render(items) {
+    if (!items || !items.length) return;
+    var key = JSON.stringify(items);
+    if (key === lastKey) return;
+    lastKey = key;
+    track.innerHTML = "";
+    track.appendChild(buildTrackContent(items));
+    bar.classList.add("show");
+    document.body.classList.add("has-marquee");
+    var width = track.scrollWidth / 2;
+    track.style.animationDuration = Math.max(width / 80, 10) + "s";
+  }
+  function fetchMarquee() {
+    fetch(MARQUEE_CHECK_URL, { method: "POST", body: JSON.stringify({ serial: "" }) })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && Array.isArray(data.marquee) && data.marquee.length) {
+          saveCache(data.marquee);
+          render(data.marquee);
+        }
+      })
+      .catch(function () {});
+  }
+
+  render(loadCache());
+  fetchMarquee();
+  setInterval(fetchMarquee, REFRESH_MS);
+})();
+</script>
+
+<script>
+/* ================= PWA 加入主畫面（獨立運作，跟上方主程式邏輯無關） ================= */
+(function () {
+  "use strict";
+  var deferredPrompt = null;
+  var btn = document.getElementById("installBtn");
+  var ua = navigator.userAgent || "";
+  var isIOSDevice = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var isMacDesktop = /Macintosh/.test(ua) && !isIOSDevice;
+  var isSafariEngine = /^((?!chrome|crios|fxios|edgios|android).)*safari/i.test(ua);
+  var isStandalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+
+  function fallbackMessage() {
+    if (isIOSDevice) return "請點畫面上的「分享」圖示，選「加入主畫面」";
+    if (isMacDesktop && isSafariEngine) return "請用選單列「檔案」→「加入 Dock」（Safari 17 以上）";
+    return "目前瀏覽器不支援安裝，或已安裝過";
+  }
+  function notify(msg) {
+    var toast = document.getElementById("toast");
+    if (!toast) { return; }
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(function () { toast.classList.remove("show"); }, 2600);
+  }
+
+  if (isStandalone && btn) { btn.style.display = "none"; }
+
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  if (btn) {
+    btn.addEventListener("click", function () {
+      if (!deferredPrompt) { notify(fallbackMessage()); return; }
+      try { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function () { deferredPrompt = null; }); }
+      catch (e) { notify(fallbackMessage()); }
+    });
+  }
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("service-worker.js").catch(function () {}); });
+  }
 })();
 </script>
 </body>

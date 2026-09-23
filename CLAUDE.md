@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-本檔案為 Claude Code 在此子資料夾工作時的指引。此資料夾目前**尚未初始化為獨立 git 儲存庫**（2026-09-23 建立，等使用者確認要不要推公開/部署後再比照工作區慣例補建 repo）。
+本檔案為 Claude Code 在此子資料夾工作時的指引。此資料夾**本身是獨立 git 儲存庫**（2026-09-23 建立並推上公開 GitHub repo）。
 
 ## 這是什麼
 
@@ -19,11 +19,20 @@
 - **序號授權總覽**（`renderLicenseSection()`）— 逐一 grep 過 9 個工具的 `STORAGE_KEY` 定義取得真實 key 名稱（`ptgSerial`／`alGenSerial`／`amazonCostCalcSerial`／`amazonListingMixSerial`／`ppcAdvisorLicenseSerial`／`pkcLicenseSerial`／`arrgLicenseSerial`／`trafficRankSerial`；`amazon-logistics-game` 未列入序號檢查，`TOOLS` 陣列裡 `licenseKey:null`），純讀取該 key 是否有值，**只代表「這台瀏覽器本機是否輸入過序號」，不是即時重新呼叫各工具的 Google Apps Script 後端確認是否仍在有效期限內**——刻意不做即時重驗證，避免對 9 個不同的 Apps Script 端點發送額外請求拖慢載入速度，manual.html 已明確標註此限制。
 - **快速入口**（`renderQuickLinks()`）— 9 個工具的絕對網址（已用 `curl` 逐一驗證 HTTP 200 確認真的在線，2026-09-23），非本機相對路徑，因為這 9 個工具各自是獨立 repo 部署在 `m255525.github.io/<repo-name>/`，不是同一個檔案樹底下的相對路徑。
 
-## 刻意不做的部分（比照 `mandala-thinking`／`scamper-thinking-generator` 等 manual-first 純工具的定位）
+## 週邊功能（2026-09-23 部署後應使用者要求補齊，逐字比照 `amazon-listing-mix-calculator` 已驗證的實作）
 
-- **無序號授權**：本工具不呼叫 AI、不曝露任何需要保護的付費邏輯，純粹是讀取使用者自己其他工具的本機資料，判斷不需要鎖。
-- **無跑馬燈／PWA／訪客計數器／浮水印匯出**：這些是「公開對外教學/推廣工具」的標準配件（見 [[marquee-rollout-coverage]]／[[pwa-install-rollout]]／[[visitor-counter-rollout]]），本工具定位是使用者自己的內部管理控制台，是否要補齊這些配件待使用者確認是否要公開部署後再處理，比照 [[pref-confirm-before-deploy-new-experimental-tool]] 的既有慣例不自動加上。
-- **尚未 `git init`／未推 GitHub repo／未部署 GitHub Pages**：同上，等使用者確認要不要公開後再處理。**這一步很關鍵**——本工具的核心價值（自動讀取商品健檢資料）要等它跟 `amazon-listing-mix-calculator` 一樣部署在 `m255525.github.io` 底下才會生效，只用 `file://` 或本機單獨 port 開啟時只能靠「手動貼上資料」備援。
+- **頂部跑馬燈** — 獨立 IIFE，逐字複製 `amazon-listing-mix-calculator` 的實作但改用淺色頁面慣用的深色細長版型（`#111827` 底、`#fbbf24` 金黃字，比照 `loan-eligibility-checker` 的版本，而非該工具自己的深色森林主題版），共用同一顆工作區公告 Google Apps Script 端點（`MARQUEE_CHECK_URL`），localStorage key 為 `ecomHealthDashboardMarquee`。`body.has-marquee{padding-top:28px;}` fixed+padding-top 版型，見 [[marquee-rollout-coverage]]。
+- **PWA 加入主畫面** — `manifest.json`＋`service-worker.js`（network-first＋同源快取備援）＋`icons/`（PIL 產生，深藍 `--brand-dark` 底＋白色醫療十字圖案，呼應標題的 🩺 意象，192/512/maskable-512/apple-touch-icon 四種尺寸，產生腳本 `_gen_icons.py` 用完即刪未進 repo）；`#installBtn` 按鈕＋沿用既有 `#toast` 元素。**已用 Playwright 實測確認 Chrome 真的判定本頁符合可安裝 PWA 條件**（`beforeinstallprompt` 事件有觸發，而非退回 fallback 訊息分支）。
+- **訪客計數器** — `visitor-badge.laobi.icu`，`page_id=m255525.ecommercehealthdashboard`，放 footer。
+- **使用警語／創作者資訊** — footer 新增 `.disclaimer` 區塊（內容依本工具實際行為改寫，非照抄姊妹專案——強調純讀取 localStorage 不上傳資料、序號授權總覽非即時驗證、檢查清單勾選狀態不互通）＋製作者信箱；`manual.html` 另外補上完整版「使用警語／創作者資料／授權與使用限制」三個段落，創作者資料段逐字比照 `amazon-listing-mix-calculator/manual.html`。
+- **下載／儲存功能**（使用者中途追加需求）：
+  - 「📥 下載健檢摘要（.txt）」— 跟既有「📋 複製健檢摘要文字」共用同一個 `buildSummaryText()`，只是輸出目的地不同（`downloadTextFile()` 用 `Blob`+`<a download>` 觸發瀏覽器下載，非跳轉導覽）。
+  - 「📥 下載檢查清單（.csv）」— 把目前套用篩選前的**全部**商品（不受搜尋/分類/進度篩選影響）匯出成 CSV，含商品/分類/角色/健康狀態/六個工具勾選狀態(`V`)/進度，開頭加 UTF-8 BOM 避免 Excel 中文亂碼，比照 `product-title-generator` 既有慣例。
+  - 檢查清單勾選狀態本來就每次點擊即時 `persistChecklist()` 寫入 `localStorage`，不需要額外「儲存」按鈕；`manual.html` 已補充說明這點，避免使用者誤以為要手動存檔。
+
+## 部署狀態
+
+已推公開 GitHub repo（<https://github.com/M255525/ecommerce-health-dashboard>）並用 Actions workflow（`.github/workflows/deploy-pages.yml`，`actions/deploy-pages@v4`，比照 `amazon-listing-mix-calculator` 逐字複製）部署 GitHub Pages：<https://m255525.github.io/ecommerce-health-dashboard/>（2026-09-23）。**同源自動讀取機制已在正式網域上用 Playwright 端對端驗證通過**（在 `amazon-listing-mix-calculator` 的真實網域寫入測試用 `amazonListingMixState` → 切到本工具的真實網域 → 確認 KPI 正確讀取並算出，驗證完畢後已清除測試資料）。只用 `file://` 或本機單獨 port 開啟時仍讀不到同源資料，只能靠「手動貼上資料」備援，這是預期行為非 bug。
 
 ## localStorage
 
