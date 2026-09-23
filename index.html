@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>跨境電商健檢總覽儀表板</title>
+<meta name="description" content="彙整跨境電商工具矩陣的商品組合健檢數據、逐商品工作流程進度與各工具序號授權狀態的單一總覽入口。">
+<style>
+  :root{
+    --bg:#f2f5f9; --card:#ffffff; --text:#1b2534; --muted:#5b6a7d; --border:#dde4ec;
+    --brand:#2452b8; --brand-dark:#173a8c; --brand-light:#e8eefc;
+    --good:#1f8a5f; --good-bg:#e5f6ee;
+    --warn:#b98a1f; --warn-bg:#fbf1de;
+    --bad:#c1394a; --bad-bg:#fbe7ea;
+    --na:#7c8798; --na-bg:#eef1f5;
+    --role-main:#2452b8; --role-associated:#6b4fa0; --role-support:#1f8a5f; --role-stimulus:#d6455c; --role-auxiliary:#8a6d3d;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+  a{color:var(--brand);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px;}
+  header.hero{background:linear-gradient(135deg,var(--brand-dark),var(--brand));color:#fff;border-radius:var(--radius);padding:28px 30px;margin-bottom:22px;box-shadow:0 8px 24px rgba(23,58,140,.18);}
+  header.hero h1{margin:0 0 6px;font-size:1.7rem;}
+  header.hero p{margin:0;opacity:.92;font-size:.95rem;max-width:760px;}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+  .btn{border:none;border-radius:999px;padding:9px 18px;font-size:.88rem;cursor:pointer;font-weight:600;transition:transform .15s,opacity .15s;}
+  .btn:active{transform:scale(.97);}
+  .btn-light{background:#fff;color:var(--brand-dark);}
+  .btn-outline{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.55);}
+  .btn-outline:hover{background:rgba(255,255,255,.22);}
+  .btn-sm{padding:6px 13px;font-size:.8rem;border-radius:999px;background:var(--brand-light);color:var(--brand-dark);border:1px solid #c9d8f7;}
+  .btn-sm:hover{background:#dbe6fb;}
+  .btn-danger-sm{background:var(--bad-bg);color:var(--bad);border:1px solid #f0c3cb;}
+
+  .source-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;}
+  .source-pill{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;padding:5px 12px;border-radius:999px;}
+  .source-pill.live{background:var(--good-bg);color:var(--good);}
+  .source-pill.cached{background:var(--warn-bg);color:var(--warn);}
+  .source-pill.none{background:var(--bad-bg);color:var(--bad);}
+  .source-bar .source-desc{font-size:.85rem;color:var(--muted);flex:1;min-width:220px;}
+
+  section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;margin-bottom:20px;}
+  section h2{margin:0 0 4px;font-size:1.15rem;}
+  section .sec-desc{margin:0 0 16px;font-size:.85rem;color:var(--muted);}
+
+  .empty-state{text-align:center;padding:34px 18px;color:var(--muted);}
+  .empty-state .big{font-size:2.1rem;margin-bottom:6px;}
+  .import-box{border:1px dashed var(--border);border-radius:10px;padding:16px;margin-top:14px;background:#f9fbfe;}
+  .import-box textarea{width:100%;min-height:100px;font-family:ui-monospace,Consolas,monospace;font-size:.78rem;border:1px solid var(--border);border-radius:8px;padding:10px;resize:vertical;}
+  .import-box .import-row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:center;}
+  .import-hint{font-size:.78rem;color:var(--muted);margin:8px 0 0;overflow-wrap:anywhere;}
+  .import-hint code{background:#eef1f5;padding:1px 6px;border-radius:4px;font-size:.75rem;overflow-wrap:anywhere;word-break:break-all;}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+  .kpi-card{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:#fbfcfe;}
+  .kpi-card.state-good{border-color:#bfe3cf;background:var(--good-bg);}
+  .kpi-card.state-warn{border-color:#eed8a8;background:var(--warn-bg);}
+  .kpi-card.state-bad{border-color:#f0c3cb;background:var(--bad-bg);}
+  .kpi-label{font-size:.78rem;color:var(--muted);margin-bottom:6px;}
+  .kpi-value{font-size:1.32rem;font-weight:700;}
+  .kpi-sub{font-size:.76rem;color:var(--muted);margin-top:4px;}
+  .kpi-badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.72rem;font-weight:700;}
+  .kpi-badge.state-good{background:var(--good-bg);color:var(--good);}
+  .kpi-badge.state-warn{background:var(--warn-bg);color:var(--warn);}
+  .kpi-badge.state-bad{background:var(--bad-bg);color:var(--bad);}
+  .kpi-badge.state-na{background:var(--na-bg);color:var(--na);}
+
+  table{width:100%;border-collapse:collapse;font-size:.86rem;}
+  th,td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;white-space:nowrap;}
+  .table-scroll{overflow-x:auto;min-width:0;}
+  .restock-tag{padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:700;}
+  .restock-tag.urgent{background:var(--bad-bg);color:var(--bad);}
+  .restock-tag.watch{background:var(--warn-bg);color:var(--warn);}
+  .role-chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:700;color:#fff;}
+  .net-pos{color:var(--good);font-weight:700;}
+  .net-neg{color:var(--bad);font-weight:700;}
+
+  .roles-summary{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .roles-summary span{background:var(--brand-light);color:var(--brand-dark);padding:4px 12px;border-radius:999px;font-size:.8rem;font-weight:600;}
+
+  .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .filter-row input,.filter-row select{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.84rem;}
+  .filter-row input{flex:1;min-width:160px;}
+
+  .check-cell{text-align:center;}
+  .check-cell input{width:16px;height:16px;cursor:pointer;}
+  .progress-mini{font-size:.72rem;color:var(--muted);white-space:nowrap;}
+  .status-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+  .status-dot.good{background:var(--good);}
+  .status-dot.warn{background:var(--warn);}
+  .status-dot.bad{background:var(--bad);}
+
+  .license-grid,.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+  .tool-card{border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:#fbfcfe;}
+  .tool-card .tname{font-weight:700;font-size:.92rem;}
+  .tool-card .tlic{font-size:.76rem;}
+  .tool-card .tlic.on{color:var(--good);}
+  .tool-card .tlic.off{color:var(--muted);}
+  .tool-card a.tlink{font-size:.8rem;margin-top:auto;}
+
+  footer{text-align:center;color:var(--muted);font-size:.78rem;margin-top:30px;padding-top:16px;border-top:1px solid var(--border);}
+  footer a{color:var(--muted);text-decoration:underline;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#1b2534;color:#fff;padding:10px 20px;border-radius:999px;font-size:.85rem;opacity:0;pointer-events:none;transition:all .25s;z-index:999;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media(max-width:640px){
+    header.hero{padding:22px 18px;}
+    section{padding:18px 16px;}
+    .kpi-grid{grid-template-columns:1fr 1fr;}
+    th,td{font-size:.78rem;padding:7px 6px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>🩺 跨境電商健檢總覽儀表板</h1>
+    <p>把「商品組合收支平衡計算機」的商品健檢數據，跟標題／Listing／成本／PPC／關鍵字雲／客評回覆等工具的使用進度整合成一頁總覽，並列出各工具序號授權狀態與快速入口。純瀏覽器端讀取，資料不會離開這台裝置。</p>
+    <div class="hero-actions">
+      <button class="btn btn-light" id="refreshBtn">🔄 重新整理資料</button>
+      <a class="btn btn-outline" href="manual.html">📖 使用說明</a>
+      <a class="btn btn-outline" href="https://m255525.github.io/amazon-listing-mix-calculator/" target="_blank" rel="noopener">🔗 開啟商品組合收支平衡計算機</a>
+    </div>
+  </header>
+
+  <div class="source-bar" id="sourceBar"></div>
+
+  <section id="dataSection">
+    <!-- KPI / restock / roles 由 JS 動態渲染，或顯示空狀態 -->
+  </section>
+
+  <section id="checklistSection" style="display:none;">
+    <h2>✅ 逐商品工作流程檢查清單</h2>
+    <p class="sec-desc">依商品組合收支平衡計算機裡的商品清單，追蹤每個商品是否已完成標題／Listing／成本試算／PPC／關鍵字雲／客評回覆的內容產出。勾選狀態只存在這台瀏覽器，不會回寫到各工具本身。</p>
+    <div class="filter-row">
+      <input type="text" id="searchInput" placeholder="搜尋商品名稱…">
+      <select id="categoryFilter"><option value="">全部分類</option></select>
+      <select id="progressFilter">
+        <option value="">全部進度</option>
+        <option value="done">已全部完成</option>
+        <option value="partial">進行中</option>
+        <option value="none">尚未開始</option>
+      </select>
+    </div>
+    <div class="table-scroll">
+      <table id="checklistTable">
+        <thead><tr>
+          <th>商品</th><th>分類</th><th>角色</th><th>健康</th>
+          <th>標題</th><th>Listing</th><th>成本</th><th>PPC</th><th>關鍵字雲</th><th>客評回覆</th>
+          <th>進度</th>
+        </tr></thead>
+        <tbody id="checklistTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="licenseSection">
+    <h2>🔑 工具序號授權總覽</h2>
+    <p class="sec-desc">讀取各工具在這台瀏覽器（同源 GitHub Pages）本機儲存的序號登入狀態，僅代表「這台裝置上是否已輸入過序號」，非即時重新向後端驗證有效期限。</p>
+    <div class="license-grid" id="licenseGrid"></div>
+  </section>
+
+  <section id="quickLinksSection">
+    <h2>🚀 跨境電商工具矩陣快速入口</h2>
+    <div class="tool-grid" id="toolGrid"></div>
+  </section>
+
+  <footer>
+    本工具為個人整合用控制台，純前端讀取瀏覽器 localStorage，不上傳任何資料。若在不同網域（非 m255525.github.io 同源）開啟，將無法自動讀取其他工具的資料，請改用「貼上資料」功能。<br>
+    創作者：Mark Tsai
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  function $(id){ return document.getElementById(id); }
+
+  /* ---------- 工具矩陣定義 ---------- */
+  var TOOLS = [
+    {key:"title",    name:"跨境商品標題產生器",              url:"https://m255525.github.io/product-title-generator/",      licenseKey:"ptgSerial",              checklist:true,  short:"標題"},
+    {key:"listing",  name:"亞馬遜5點式產品說明產生器",        url:"https://m255525.github.io/amazon-listing-generator/",     licenseKey:"alGenSerial",            checklist:true,  short:"Listing"},
+    {key:"cost",     name:"Amazon成本分析計算機",            url:"https://m255525.github.io/amazon-cost-calculator/",       licenseKey:"amazonCostCalcSerial",   checklist:true,  short:"成本"},
+    {key:"mix",      name:"商品組合收支平衡計算機",          url:"https://m255525.github.io/amazon-listing-mix-calculator/",licenseKey:"amazonListingMixSerial", checklist:false, short:"組合健檢"},
+    {key:"ppc",      name:"Amazon PPC關鍵字廣告建議工具",    url:"https://m255525.github.io/amazon-ppc-advisor/",           licenseKey:"ppcAdvisorLicenseSerial",checklist:true,  short:"PPC"},
+    {key:"keyword",  name:"跨境電商關鍵字文字雲產生器",      url:"https://m255525.github.io/product-keyword-cloud/",        licenseKey:"pkcLicenseSerial",       checklist:true,  short:"關鍵字雲"},
+    {key:"review",   name:"Amazon客評/客訴回覆信產生器",      url:"https://m255525.github.io/amazon-review-reply-generator/",licenseKey:"arrgLicenseSerial",      checklist:true,  short:"客評回覆"},
+    {key:"traffic",  name:"網站流量排名比較工具",            url:"https://m255525.github.io/traffic-rank-estimator/",       licenseKey:"trafficRankSerial",      checklist:false, short:"流量排名"},
+    {key:"logistics",name:"跨境物流大挑戰（教學遊戲）",      url:"https://m255525.github.io/amazon-logistics-game/",        licenseKey:null,                     checklist:false, short:"物流教學"}
+  ];
+  var CHECKLIST_TOOLS = TOOLS.filter(function(t){ return t.checklist; });
+
+  var SOURCE_STATE_KEY = "amazonListingMixState";
+  var IMPORTED_CACHE_KEY = "ecomHealthImportedState";
+  var CHECKLIST_KEY = "ecomHealthChecklist";
+
+  var ROLE_DEFS = {
+    main:       {label:"主力商品", color:"var(--role-main)"},
+    support:    {label:"輔助商品", color:"var(--role-support)"},
+    auxiliary:  {label:"附屬商品", color:"var(--role-auxiliary)"},
+    associated: {label:"聯想商品", color:"var(--role-associated)"},
+    stimulus:   {label:"刺激商品", color:"var(--role-stimulus)"}
+  };
+
+  var srcState = null;   // 目前使用中的 amazonListingMixState
+  var srcMode = "none";  // live | cached | none
+  var calc = null;       // calculate() 結果
+  var checklist = {};
+
+  /* ---------- 讀取資料來源 ---------- */
+  function tryParse(raw){
+    if(!raw) return null;
+    try{
+      var d = JSON.parse(raw);
+      if(d && Array.isArray(d.categories) && Array.isArray(d.products)) return d;
+    }catch(e){}
+    return null;
+  }
+  function loadSource(){
+    var live = null;
+    try{ live = tryParse(localStorage.getItem(SOURCE_STATE_KEY)); }catch(e){}
+    if(live){ srcState = live; srcMode = "live"; return; }
+    var cached = null;
+    try{ cached = tryParse(localStorage.getItem(IMPORTED_CACHE_KEY)); }catch(e){}
+    if(cached){ srcState = cached; srcMode = "cached"; return; }
+    srcState = null; srcMode = "none";
+  }
+  function loadChecklist(){
+    try{ checklist = JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {}; }catch(e){ checklist = {}; }
+  }
+  function persistChecklist(){
+    try{ localStorage.setItem(CHECKLIST_KEY, JSON.stringify(checklist)); }catch(e){}
+  }
+
+  /* ---------- 移植自 amazon-listing-mix-calculator 的計算邏輯 ---------- */
+  function classifyProductRoles(perProduct){
+    var roles = {};
+    if(!perProduct.length) return roles;
+    var sorted = perProduct.slice().sort(function(a,b){ return b.monthlyNet - a.monthlyNet; });
+    var totalNet = sorted.reduce(function(s,r){ return s + Math.max(r.monthlyNet,0); }, 0);
+    if(totalNet <= 0){
+      sorted.forEach(function(r){ roles[r.id] = "auxiliary"; });
+      return roles;
+    }
+    var coreCatIds = {};
+    var cum = 0;
+    sorted.forEach(function(r){
+      var before = cum / totalNet;
+      cum += Math.max(r.monthlyNet, 0);
+      if(before < 0.6){ roles[r.id] = "main"; coreCatIds[r.categoryId] = true; }
+      else if(before < 0.85){ roles[r.id] = coreCatIds[r.categoryId] ? "associated" : "support"; }
+      else { roles[r.id] = "pending"; }
+    });
+    var salesList = sorted.map(function(r){ return r.monthlySales; }).sort(function(a,b){ return a-b; });
+    var medianSales = salesList.length ? salesList[Math.floor(salesList.length/2)] : 0;
+    var pricesSorted = sorted.filter(function(r){ return r.priceTWD != null; }).map(function(r){ return r.priceTWD; }).sort(function(a,b){ return a-b; });
+    var lowPriceThreshold = pricesSorted.length ? pricesSorted[Math.floor(pricesSorted.length*0.25)] : null;
+    sorted.forEach(function(r){
+      if(roles[r.id] !== "pending") return;
+      if(lowPriceThreshold != null && r.priceTWD != null && r.priceTWD <= lowPriceThreshold && r.monthlySales >= medianSales){ roles[r.id] = "stimulus"; }
+      else { roles[r.id] = "auxiliary"; }
+    });
+    return roles;
+  }
+
+  function calculate(state){
+    var catMap = {};
+    state.categories.forEach(function(c){ catMap[c.id] = c; });
+    var perProduct = state.products.map(function(p){
+      var cat = catMap[p.categoryId];
+      var feePct = cat ? cat.feePct : 0;
+      var priceCurrency = p.priceCurrency === "JPY" ? "JPY" : "USD";
+      var priceTWD = (p.priceTWD != null && p.priceTWD > 0) ? p.priceTWD : null;
+      var weeklyRevenue = priceTWD != null ? priceTWD * p.weeklySales : 0;
+      var monthlyRevenue = priceTWD != null ? priceTWD * p.monthlySales : 0;
+      var weeklyProfit = weeklyRevenue * (1 - feePct/100);
+      var monthlyProfit = monthlyRevenue * (1 - feePct/100);
+      var netCoefficient = state.netCoefficient == null ? 100 : state.netCoefficient;
+      var weeklyNet = weeklyProfit * (netCoefficient/100);
+      var monthlyNet = monthlyProfit * (netCoefficient/100);
+      var dailySales = p.weeklySales / 7;
+      var daysLeft = dailySales > 0 ? p.stock / dailySales : null;
+      var restockLevel = "normal";
+      if(daysLeft !== null){
+        if(daysLeft < state.restockLeadDays) restockLevel = "urgent";
+        else if(daysLeft < state.restockLeadDays * 1.5) restockLevel = "watch";
+      }
+      var listingValue = priceTWD != null ? priceTWD * p.stock : null;
+      return {
+        id:p.id, name:p.name && p.name.trim() ? p.name.trim() : "(未命名商品)",
+        categoryId:p.categoryId, categoryName: cat ? cat.name : "未分類", feePct:feePct,
+        price:p.price, priceCurrency:priceCurrency, priceTWD:priceTWD,
+        stock:p.stock, weeklySales:p.weeklySales, monthlySales:p.monthlySales,
+        weeklyProfit:weeklyProfit, monthlyProfit:monthlyProfit,
+        weeklyNet:weeklyNet, monthlyNet:monthlyNet,
+        listingValue:listingValue, daysLeft:daysLeft, restockLevel:restockLevel
+      };
+    });
+    var totals = {weeklyGross:0, monthlyGross:0, weeklyNet:0, monthlyNet:0, listingTotal:0, listingCountedProducts:0};
+    perProduct.forEach(function(r){
+      totals.weeklyGross += r.weeklyProfit;
+      totals.monthlyGross += r.monthlyProfit;
+      totals.weeklyNet += r.weeklyNet;
+      totals.monthlyNet += r.monthlyNet;
+      if(r.listingValue != null){ totals.listingTotal += r.listingValue; totals.listingCountedProducts++; }
+    });
+    var roles = classifyProductRoles(perProduct);
+    perProduct.forEach(function(r){ r.role = roles[r.id] || "auxiliary"; });
+    return {perProduct:perProduct, totals:totals};
+  }
+
+  function balanceState(net, threshold){
+    if(!threshold || threshold <= 0) return "na";
+    var ratio = net / threshold;
+    if(ratio >= 1) return "good";
+    if(ratio >= 0.9) return "warn";
+    return "bad";
+  }
+
+  /* ---------- Formatting ---------- */
+  function fmtInt(n){ return Math.round(n).toLocaleString("zh-TW"); }
+  function fmtMoney(n){ return (n<0?"−":"") + "NT$" + fmtInt(Math.abs(n)); }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function showToast(msg){
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(function(){ t.classList.remove("show"); }, 2600);
+  }
+
+  /* ---------- 資料來源列 ---------- */
+  function renderSourceBar(){
+    var bar = $("sourceBar");
+    var pillCls = srcMode === "live" ? "live" : (srcMode === "cached" ? "cached" : "none");
+    var pillText = srcMode === "live" ? "🔗 已自動讀取（同源即時資料）" : (srcMode === "cached" ? "📋 使用先前貼上的資料（非即時）" : "⚠️ 尚未取得資料");
+    var descText = srcMode === "live"
+      ? "已從「商品組合收支平衡計算機」的本機資料自動讀取最新商品清單。"
+      : srcMode === "cached"
+        ? "目前顯示的是先前手動貼上的資料快照，可能不是最新狀態；建議定期重新貼上更新。"
+        : "請先到「商品組合收支平衡計算機」建立商品資料，或在下方貼上匯出的資料。";
+    bar.innerHTML =
+      '<span class="source-pill ' + pillCls + '">' + pillText + '</span>' +
+      '<span class="source-desc">' + descText + '</span>' +
+      (srcMode === "cached" ? '<button class="btn-sm btn-danger-sm" id="clearCacheBtn">清除快取資料</button>' : '');
+    if(srcMode === "cached"){
+      $("clearCacheBtn").addEventListener("click", function(){
+        try{ localStorage.removeItem(IMPORTED_CACHE_KEY); }catch(e){}
+        showToast("已清除快取資料");
+        boot();
+      });
+    }
+  }
+
+  /* ---------- 主資料區（KPI／補貨／角色／空狀態或貼上面板） ---------- */
+  function renderDataSection(){
+    var sec = $("dataSection");
+    if(!srcState){
+      sec.innerHTML =
+        '<div class="empty-state">' +
+          '<div class="big">📭</div>' +
+          '<p>目前讀不到「商品組合收支平衡計算機」的商品資料。</p>' +
+          '<p><a href="https://m255525.github.io/amazon-listing-mix-calculator/" target="_blank" rel="noopener">前往該工具建立商品清單 →</a></p>' +
+        '</div>' +
+        buildImportBox();
+      bindImportBox();
+      return;
+    }
+    calc = calculate(srcState);
+    var totals = calc.totals;
+    var wState = balanceState(totals.weeklyNet, srcState.weeklyThreshold);
+    var mState = balanceState(totals.monthlyNet, srcState.monthlyThreshold);
+    var wLabel = wState === "na" ? "尚未設定門檻" : (wState === "good" ? "獲利" : wState === "warn" ? "打平臨界" : "虧損");
+    var mLabel = mState === "na" ? "尚未設定門檻" : (mState === "good" ? "獲利" : mState === "warn" ? "打平臨界" : "虧損");
+
+    var capState = "na", capSub = "尚未啟用上限";
+    if(srcState.capEnabled && srcState.capAmount > 0){
+      capState = totals.listingTotal > srcState.capAmount ? "bad" : "good";
+      capSub = "上限 " + fmtMoney(srcState.capAmount) + "　<span class=\"kpi-badge state-" + capState + "\">" + (capState==="bad"?"已超過":"未超過") + "</span>";
+    } else if(totals.listingCountedProducts > 0){
+      capSub = "（" + totals.listingCountedProducts + " 項商品有填售價才計入，未啟用上限）";
+    }
+
+    var urgent = calc.perProduct.filter(function(r){ return r.restockLevel === "urgent"; }).sort(function(a,b){ return a.daysLeft-b.daysLeft; });
+    var watch = calc.perProduct.filter(function(r){ return r.restockLevel === "watch"; }).sort(function(a,b){ return a.daysLeft-b.daysLeft; });
+
+    var roleCounts = {};
+    calc.perProduct.forEach(function(r){ roleCounts[r.role] = (roleCounts[r.role]||0)+1; });
+
+    var html = '';
+    html += '<h2>📊 商品組合健檢</h2>';
+    html += '<p class="sec-desc">共 ' + calc.perProduct.length + ' 項商品、' + srcState.categories.length + ' 個分類。數字直接沿用商品組合收支平衡計算機的計算規則現場重算。</p>';
+    html += '<div class="kpi-grid">';
+    html += kpiCard("總週毛利（已扣抽成）", fmtMoney(totals.weeklyGross), "淨利係數 " + (srcState.netCoefficient||100) + "%", "");
+    html += kpiCard("總月毛利（已扣抽成）", fmtMoney(totals.monthlyGross), "淨利係數 " + (srcState.netCoefficient||100) + "%", "");
+    html += kpiCard("總週淨利", fmtMoney(totals.weeklyNet), "門檻 " + fmtMoney(srcState.weeklyThreshold) + "　<span class=\"kpi-badge state-" + wState + "\">" + wLabel + "</span>", wState);
+    html += kpiCard("總月淨利", fmtMoney(totals.monthlyNet), "門檻 " + fmtMoney(srcState.monthlyThreshold) + "　<span class=\"kpi-badge state-" + mState + "\">" + mLabel + "</span>", mState);
+    html += kpiCard("上架總金額（庫存估值）", fmtMoney(totals.listingTotal), capSub, capState);
+    html += kpiCard("補貨警示", (urgent.length+watch.length) + " 項", "緊急 " + urgent.length + " 項　注意 " + watch.length + " 項", urgent.length ? "bad" : (watch.length ? "warn" : "good"));
+    html += '</div>';
+
+    if(urgent.length || watch.length){
+      html += '<div class="table-scroll" style="margin-top:18px;"><table><thead><tr><th>商品</th><th>分類</th><th>庫存</th><th>週銷量</th><th>可撐天數</th><th>等級</th></tr></thead><tbody>';
+      urgent.concat(watch).forEach(function(r){
+        var tagCls = r.restockLevel === "urgent" ? "urgent" : "watch";
+        var tagLabel = r.restockLevel === "urgent" ? "緊急補貨" : "注意";
+        html += '<tr><td>' + escapeHtml(r.name) + '</td><td>' + escapeHtml(r.categoryName) + '</td><td>' + fmtInt(r.stock) + '</td><td>' + fmtInt(r.weeklySales) + '</td><td>' + r.daysLeft.toFixed(1) + ' 天</td><td><span class="restock-tag ' + tagCls + '">' + tagLabel + '</span></td></tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+
+    html += '<h2 style="margin-top:22px;">🏷️ 商品組合陳列角色分布</h2>';
+    html += '<div class="roles-summary">';
+    ["main","associated","support","auxiliary","stimulus"].forEach(function(k){
+      html += '<span>' + ROLE_DEFS[k].label + '：' + (roleCounts[k]||0) + ' 項</span>';
+    });
+    html += '</div>';
+
+    html += '<div style="margin-top:6px;"><button class="btn-sm" id="copySummaryBtn">📋 複製健檢摘要文字</button>' +
+            (srcMode === "cached" ? ' <button class="btn-sm" id="reimportBtn">重新貼上更新資料</button>' : '') + '</div>';
+
+    sec.innerHTML = html;
+    $("copySummaryBtn").addEventListener("click", copySummary);
+    if(srcMode === "cached" && $("reimportBtn")){
+      $("reimportBtn").addEventListener("click", function(){
+        sec.insertAdjacentHTML("beforeend", buildImportBox());
+        bindImportBox();
+      });
+    }
+  }
+
+  function kpiCard(label, value, sub, stateCls){
+    return '<div class="kpi-card' + (stateCls ? ' state-' + stateCls : '') + '">' +
+      '<div class="kpi-label">' + label + '</div>' +
+      '<div class="kpi-value">' + value + '</div>' +
+      (sub ? '<div class="kpi-sub">' + sub + '</div>' : '') +
+    '</div>';
+  }
+
+  function copySummary(){
+    var totals = calc.totals;
+    var urgent = calc.perProduct.filter(function(r){ return r.restockLevel === "urgent"; });
+    var watch = calc.perProduct.filter(function(r){ return r.restockLevel === "watch"; });
+    var lines = [];
+    lines.push("【跨境電商健檢摘要】" + new Date().toLocaleDateString("zh-TW"));
+    lines.push("商品數：" + calc.perProduct.length + "　分類數：" + srcState.categories.length);
+    lines.push("總週淨利：" + fmtMoney(totals.weeklyNet) + "（門檻 " + fmtMoney(srcState.weeklyThreshold) + "）");
+    lines.push("總月淨利：" + fmtMoney(totals.monthlyNet) + "（門檻 " + fmtMoney(srcState.monthlyThreshold) + "）");
+    lines.push("上架總金額：" + fmtMoney(totals.listingTotal) + (srcState.capEnabled ? "（上限 " + fmtMoney(srcState.capAmount) + "）" : ""));
+    if(urgent.length) lines.push("緊急補貨：" + urgent.map(function(r){ return r.name; }).join("、"));
+    if(watch.length) lines.push("注意補貨：" + watch.map(function(r){ return r.name; }).join("、"));
+    var text = lines.join("\n");
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ showToast("已複製健檢摘要"); }).catch(function(){ showToast("複製失敗，請手動選取"); });
+    } else {
+      showToast("此瀏覽器不支援自動複製");
+    }
+  }
+
+  /* ---------- 貼上資料面板 ---------- */
+  function buildImportBox(){
+    return '<div class="import-box">' +
+      '<strong>手動貼上資料</strong>' +
+      '<p class="import-hint">若這台瀏覽器沒有自動讀到資料（例如尚未部署到同一個 GitHub Pages 網域），可以打開 ' +
+      '<a href="https://m255525.github.io/amazon-listing-mix-calculator/" target="_blank" rel="noopener">商品組合收支平衡計算機</a>，按 F12 開啟開發者工具 Console，輸入 ' +
+      '<code>copy(localStorage.getItem(\'amazonListingMixState\'))</code> 後貼到下面文字框。</p>' +
+      '<textarea id="importTextarea" placeholder="貼上 JSON 內容…"></textarea>' +
+      '<div class="import-row"><button class="btn-sm" id="importBtn">載入資料</button><span id="importMsg" style="font-size:.78rem;color:var(--bad);"></span></div>' +
+    '</div>';
+  }
+  function bindImportBox(){
+    var btn = $("importBtn");
+    if(!btn) return;
+    btn.addEventListener("click", function(){
+      var raw = $("importTextarea").value;
+      var parsed = tryParse(raw);
+      if(!parsed){
+        $("importMsg").textContent = "格式不正確，請確認貼上的是完整 JSON 內容。";
+        return;
+      }
+      try{ localStorage.setItem(IMPORTED_CACHE_KEY, JSON.stringify(parsed)); }catch(e){}
+      showToast("已載入資料");
+      boot();
+    });
+  }
+
+  /* ---------- 檢查清單 ---------- */
+  function renderChecklistSection(){
+    var sec = $("checklistSection");
+    if(!srcState || !calc || !calc.perProduct.length){ sec.style.display = "none"; return; }
+    sec.style.display = "";
+
+    var catSel = $("categoryFilter");
+    catSel.innerHTML = '<option value="">全部分類</option>' + srcState.categories.map(function(c){
+      return '<option value="' + escapeHtml(c.id) + '">' + escapeHtml(c.name) + '</option>';
+    }).join("");
+
+    renderChecklistTable();
+    $("searchInput").oninput = renderChecklistTable;
+    $("categoryFilter").onchange = renderChecklistTable;
+    $("progressFilter").onchange = renderChecklistTable;
+  }
+
+  function getProgress(pid){
+    var row = checklist[pid] || {};
+    var done = CHECKLIST_TOOLS.filter(function(t){ return row[t.key]; }).length;
+    return {done:done, total:CHECKLIST_TOOLS.length};
+  }
+
+  function renderChecklistTable(){
+    var q = ($("searchInput").value || "").trim().toLowerCase();
+    var catFilter = $("categoryFilter").value;
+    var progFilter = $("progressFilter").value;
+    var tbody = $("checklistTbody");
+    var rows = calc.perProduct.filter(function(r){
+      if(q && r.name.toLowerCase().indexOf(q) === -1) return false;
+      if(catFilter && r.categoryId !== catFilter) return false;
+      if(progFilter){
+        var p = getProgress(r.id);
+        if(progFilter === "done" && p.done !== p.total) return false;
+        if(progFilter === "none" && p.done !== 0) return false;
+        if(progFilter === "partial" && (p.done === 0 || p.done === p.total)) return false;
+      }
+      return true;
+    });
+    if(!rows.length){
+      tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:20px;">沒有符合條件的商品</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r){
+      var healthDot = r.monthlyNet > 0 ? "good" : (r.monthlyNet === 0 ? "warn" : "bad");
+      if(r.restockLevel === "urgent") healthDot = "bad";
+      var role = ROLE_DEFS[r.role];
+      var row = checklist[r.id] || {};
+      var checks = CHECKLIST_TOOLS.map(function(t){
+        var checked = row[t.key] ? "checked" : "";
+        return '<td class="check-cell"><input type="checkbox" data-pid="' + escapeHtml(r.id) + '" data-tool="' + t.key + '" ' + checked + '></td>';
+      }).join("");
+      var prog = getProgress(r.id);
+      return '<tr>' +
+        '<td>' + escapeHtml(r.name) + '</td>' +
+        '<td>' + escapeHtml(r.categoryName) + '</td>' +
+        '<td><span class="role-chip" style="background:' + role.color + '">' + role.label + '</span></td>' +
+        '<td><span class="status-dot ' + healthDot + '"></span>' + (r.restockLevel === "urgent" ? "急需補貨" : r.restockLevel === "watch" ? "需留意庫存" : (r.monthlyNet >= 0 ? "正常" : "月淨利為負")) + '</td>' +
+        checks +
+        '<td class="progress-mini">' + prog.done + ' / ' + prog.total + '</td>' +
+      '</tr>';
+    }).join("");
+
+    var boxes = tbody.querySelectorAll('input[type="checkbox"]');
+    boxes.forEach(function(box){
+      box.addEventListener("change", function(){
+        var pid = this.dataset.pid, tool = this.dataset.tool;
+        checklist[pid] = checklist[pid] || {};
+        checklist[pid][tool] = this.checked;
+        persistChecklist();
+        renderChecklistTable();
+      });
+    });
+  }
+
+  /* ---------- 序號授權總覽 ---------- */
+  function renderLicenseSection(){
+    var grid = $("licenseGrid");
+    grid.innerHTML = TOOLS.filter(function(t){ return t.licenseKey; }).map(function(t){
+      var val = null;
+      try{ val = localStorage.getItem(t.licenseKey); }catch(e){}
+      var has = !!val;
+      return '<div class="tool-card">' +
+        '<div class="tname">' + escapeHtml(t.name) + '</div>' +
+        '<div class="tlic ' + (has?'on':'off') + '">' + (has ? "🔓 本機已輸入序號" : "🔒 本機尚未輸入序號") + '</div>' +
+        '<a class="tlink" href="' + t.url + '" target="_blank" rel="noopener">開啟工具 →</a>' +
+      '</div>';
+    }).join("");
+  }
+
+  /* ---------- 快速入口 ---------- */
+  function renderQuickLinks(){
+    var grid = $("toolGrid");
+    grid.innerHTML = TOOLS.map(function(t){
+      return '<div class="tool-card">' +
+        '<div class="tname">' + escapeHtml(t.name) + '</div>' +
+        '<a class="tlink" href="' + t.url + '" target="_blank" rel="noopener">前往使用 →</a>' +
+      '</div>';
+    }).join("");
+  }
+
+  /* ---------- 初始化 ---------- */
+  function boot(){
+    loadSource();
+    loadChecklist();
+    renderSourceBar();
+    renderDataSection();
+    renderChecklistSection();
+    renderLicenseSection();
+    renderQuickLinks();
+  }
+
+  $("refreshBtn").addEventListener("click", function(){ boot(); showToast("已重新讀取"); });
+
+  boot();
+})();
+</script>
+</body>
+</html>

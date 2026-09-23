@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>使用說明 — 跨境電商健檢總覽儀表板</title>
+<style>
+  body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;max-width:760px;margin:0 auto;padding:30px 20px 60px;color:#1b2534;line-height:1.75;background:#f2f5f9;}
+  h1{font-size:1.5rem;}
+  h2{font-size:1.15rem;margin-top:2em;border-left:4px solid #2452b8;padding-left:10px;}
+  code{background:#eef1f5;padding:1px 6px;border-radius:4px;font-size:.85em;}
+  .back{display:inline-block;margin-bottom:20px;}
+  ul{padding-left:1.3em;}
+  .note{background:#fff;border:1px solid #dde4ec;border-radius:10px;padding:14px 18px;margin:14px 0;}
+</style>
+</head>
+<body>
+  <a class="back" href="index.html">← 回到儀表板</a>
+  <h1>📖 使用說明 — 跨境電商健檢總覽儀表板</h1>
+
+  <p>這是一個「把跨境電商工具矩陣結果集中在一頁看」的控制台，本身不做任何計算或內容生成，資料全部來自其他既有工具，純前端讀取瀏覽器 <code>localStorage</code>，不會上傳到任何伺服器。</p>
+
+  <h2>資料怎麼來的</h2>
+  <p>「商品組合健檢」區塊的數字，來自 <a href="https://m255525.github.io/amazon-listing-mix-calculator/" target="_blank" rel="noopener">商品組合收支平衡計算機</a> 儲存在瀏覽器裡的商品清單。因為兩個工具都部署在 <code>m255525.github.io</code> 這個網域下（只是路徑不同），瀏覽器會把它們視為「同一個網站」，所以本頁可以自動讀到對方存的資料，不需要任何額外設定。</p>
+  <div class="note">
+    <strong>什麼時候會讀不到？</strong><br>
+    如果你是在本機用不同 port 分別開兩個工具測試（例如 <code>localhost:8814</code> 和 <code>localhost:8821</code>），瀏覽器會視為不同網站，無法自動共用資料。這種情況下請用下面的「手動貼上資料」功能。
+  </div>
+
+  <h2>手動貼上資料（備援方式）</h2>
+  <ol>
+    <li>打開 <a href="https://m255525.github.io/amazon-listing-mix-calculator/" target="_blank" rel="noopener">商品組合收支平衡計算機</a></li>
+    <li>按 <code>F12</code> 開啟瀏覽器開發者工具，切到 Console 分頁</li>
+    <li>輸入 <code>copy(localStorage.getItem('amazonListingMixState'))</code> 按 Enter（會自動複製到剪貼簿）</li>
+    <li>回到本儀表板，貼進「手動貼上資料」文字框，按「載入資料」</li>
+  </ol>
+  <p>貼上的資料會快取在本機，重新整理頁面不會消失，但也不會自動更新——商品資料異動後記得重新貼一次。</p>
+
+  <h2>逐商品工作流程檢查清單</h2>
+  <p>清單裡每一項商品可以勾選「標題／Listing／成本／PPC／關鍵字雲／客評回覆」六個工具是否已經完成對應的內容產出。勾選狀態只存在這台瀏覽器（<code>localStorage</code>），純粹是給自己追蹤進度用，不會影響其他工具、其他工具也讀不到這個勾選狀態。</p>
+
+  <h2>序號授權總覽</h2>
+  <p>顯示各工具在這台瀏覽器裡「本機是否已經輸入過序號」，這是讀取本機儲存的序號字串，<strong>不是</strong>即時重新向後端確認是否仍在有效期限內。真正的到期驗證仍以各工具自己的驗證結果為準。</p>
+
+  <h2>限制</h2>
+  <ul>
+    <li>目前只彙整「商品組合收支平衡計算機」的商品健檢資料；其他工具（標題產生器、Listing產生器、PPC建議、關鍵字雲、客評回覆、流量排名）本身不會把每次產出的內容存成結構化歷史紀錄，所以無法在這裡自動彙整它們的產出內容，只能用檢查清單手動追蹤進度。</li>
+    <li>商品的檢查清單是用商品在「商品組合收支平衡計算機」裡的內部 id 對應，如果之後改用 CSV 重新匯入整批商品、id 有變動，先前勾選的進度可能對不上新的商品列。</li>
+  </ul>
+</body>
+</html>
